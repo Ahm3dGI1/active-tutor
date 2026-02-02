@@ -1,0 +1,24 @@
+.claude/
+.notebook/
+
+# Node
+node_modules/
+dist/
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# SQLite / Flask instance
+instance/
+*.db
+*.sqlite
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
