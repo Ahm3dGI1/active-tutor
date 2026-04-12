@@ -3,6 +3,8 @@ import { sendToBackground, sendToContentScript } from '../shared/messaging.js';
 import { MSG, STORAGE_KEYS } from '../shared/constants.js';
 import { onMessage } from '../shared/messaging.js';
 import ChatTab from './tabs/ChatTab.jsx';
+import MaterialsTab from './tabs/MaterialsTab.jsx';
+import RecapTab from './tabs/RecapTab.jsx';
 
 const TABS = [
   { id: 'chat', label: 'Chat', icon: '\uD83D\uDCAC' },
@@ -118,10 +120,10 @@ export default function SidePanel() {
           <ChatTab session={session} />
         )}
         {activeTab === 'materials' && (
-          <div className="p-4 text-sm text-surface-500">Study materials tab coming soon...</div>
+          <MaterialsTab session={session} />
         )}
         {activeTab === 'recap' && (
-          <div className="p-4 text-sm text-surface-500">Session recap tab coming soon...</div>
+          <RecapTab session={session} />
         )}
         {activeTab === 'settings' && (
           <div className="p-4 text-sm text-surface-500">Settings tab coming soon...</div>
