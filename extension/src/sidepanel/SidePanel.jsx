@@ -5,6 +5,7 @@ import { onMessage } from '../shared/messaging.js';
 import ChatTab from './tabs/ChatTab.jsx';
 import MaterialsTab from './tabs/MaterialsTab.jsx';
 import RecapTab from './tabs/RecapTab.jsx';
+import SettingsTab from './tabs/SettingsTab.jsx';
 
 const TABS = [
   { id: 'chat', label: 'Chat', icon: '\uD83D\uDCAC' },
@@ -77,23 +78,16 @@ export default function SidePanel() {
     );
   }
 
-  if (!session) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-white p-6 text-center">
-        <h2 className="text-lg font-bold text-surface-800 mb-2">No Active Session</h2>
-        <p className="text-sm text-surface-500">
-          Navigate to a YouTube video and click "Start Hermex Session" to begin learning.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="h-screen flex flex-col bg-white">
       {/* Header */}
       <div className="px-4 py-3 border-b border-surface-100 bg-surface-50">
-        <h2 className="text-sm font-bold text-surface-800 truncate">{session.title || 'Learning Session'}</h2>
-        <p className="text-xs text-surface-400 mt-0.5">Session active</p>
+        <h2 className="text-sm font-bold text-surface-800 truncate">
+          {session?.title || (session ? 'Learning Session' : 'Hermex')}
+        </h2>
+        <p className="text-xs text-surface-400 mt-0.5">
+          {session ? 'Session active' : 'No active session'}
+        </p>
       </div>
 
       {/* Tab bar */}
@@ -116,17 +110,30 @@ export default function SidePanel() {
 
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'chat' && (
-          <ChatTab session={session} />
-        )}
-        {activeTab === 'materials' && (
-          <MaterialsTab session={session} />
-        )}
-        {activeTab === 'recap' && (
-          <RecapTab session={session} />
-        )}
-        {activeTab === 'settings' && (
-          <div className="p-4 text-sm text-surface-500">Settings tab coming soon...</div>
+        {!session && activeTab !== 'settings' ? (
+          <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+            <h2 className="text-lg font-bold text-surface-800 mb-2">No Active Session</h2>
+            <p className="text-sm text-surface-500">
+              Navigate to a YouTube video and click "Start Hermex Session" to begin learning.
+            </p>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'chat' && <ChatTab session={session} />}
+            {activeTab === 'materials' && <MaterialsTab session={session} />}
+            {activeTab === 'recap' && <RecapTab session={session} />}
+            {activeTab === 'settings' && (
+              <SettingsTab
+                session={session}
+                user={user}
+                onAuthChange={() => {
+                  setAuthenticated(false);
+                  setUser(null);
+                  setSession(null);
+                }}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

@@ -38,6 +38,10 @@ onMessages({
     }
   },
 
+  [MSG.UPDATE_PROFILE]: async (msg) => {
+    return api.updateProfile(msg.data);
+  },
+
   // Sessions
   [MSG.CREATE_SESSION]: async (msg) => {
     const data = await api.createSession(msg.youtubeUrl);
