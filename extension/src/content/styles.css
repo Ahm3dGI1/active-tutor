@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Dark theme: when .dark is on an ancestor, remap the most common surface/text
+   colors without having to add dark: variants to every component.
+   Individual components can still opt into finer-grained dark:… variants. */
+@layer utilities {
+  .dark {
+    color-scheme: dark;
+  }
+  .dark .bg-white { background-color: #1c1917; }
+  .dark .bg-surface-50 { background-color: #292524; }
+  .dark .bg-surface-100 { background-color: #3a3532; }
+  .dark .bg-surface-100\/50 { background-color: rgba(58, 53, 50, 0.5); }
+  .dark .bg-primary-50 { background-color: rgba(20, 184, 166, 0.12); }
+  .dark .bg-primary-50\/50 { background-color: rgba(20, 184, 166, 0.08); }
+  .dark .bg-primary-100 { background-color: rgba(20, 184, 166, 0.18); }
+  .dark .bg-accent-50 { background-color: rgba(249, 115, 22, 0.10); }
+  .dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.12); }
+  .dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.12); }
+
+  .dark .text-surface-800 { color: #f5f5f4; }
+  .dark .text-surface-700 { color: #e7e5e4; }
+  .dark .text-surface-600 { color: #d6d3d1; }
+  .dark .text-surface-500 { color: #a8a29e; }
+  .dark .text-surface-400 { color: #78716c; }
+
+  .dark .border-surface-100 { border-color: #3a3532; }
+  .dark .border-surface-200 { border-color: #57534e; }
+  .dark .border-surface-300 { border-color: #6b645e; }
+
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: #292524;
+    color: #f5f5f4;
+  }
+}

@@ -3,6 +3,7 @@ export default {
   content: [
     './src/**/*.{js,jsx,html}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {

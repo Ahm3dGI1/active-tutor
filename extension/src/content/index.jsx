@@ -4,10 +4,13 @@ import { observeNavigation, isWatchPage, extractVideoId } from './navigation-obs
 import { YouTubePlayer } from './youtube-player.js';
 import { onMessage } from '../shared/messaging.js';
 import { MSG } from '../shared/constants.js';
+import { syncDarkTheme } from '../shared/theme.js';
 import ContentApp from '../content-ui/ContentApp.jsx';
+import cssText from './styles.css?inline';
 
 let root = null;
 let mountPoint = null;
+let shadowHost = null;
 const player = new YouTubePlayer();
 
 /**
@@ -29,15 +32,28 @@ async function initOnWatchPage(url) {
     return;
   }
 
-  // Create mount point if not exists
-  if (!mountPoint) {
+  // Create mount point with shadow DOM to isolate our styles from YouTube's.
+  // Inline-styled portaled children (ActivateButton, SessionBanner,
+  // ProgressBarOverlay, CheckpointOverlay) still render into YouTube's DOM, but
+  // the React tree itself lives inside a shadow root so Tailwind-styled content
+  // added later won't collide with YouTube's CSS.
+  if (!shadowHost) {
+    shadowHost = document.createElement('div');
+    shadowHost.id = 'hermex-root';
+    shadowHost.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000;';
+    document.body.appendChild(shadowHost);
+
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+    const style = document.createElement('style');
+    style.textContent = cssText;
+    shadow.appendChild(style);
+
     mountPoint = document.createElement('div');
-    mountPoint.id = 'hermex-root';
-    mountPoint.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000;';
-    document.body.appendChild(mountPoint);
+    shadow.appendChild(mountPoint);
+
+    syncDarkTheme(mountPoint);
   }
 
-  // Mount React app
   if (!root) {
     root = createRoot(mountPoint);
   }
@@ -52,6 +68,11 @@ function cleanup() {
   if (root) {
     root.unmount();
     root = null;
+  }
+  if (shadowHost) {
+    shadowHost.remove();
+    shadowHost = null;
+    mountPoint = null;
   }
   player.destroy();
 }

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { sendToBackground } from '../shared/messaging.js';
 import { MSG, STORAGE_KEYS } from '../shared/constants.js';
+import { syncDarkTheme } from '../shared/theme.js';
 import '../content/styles.css';
+
+syncDarkTheme();
 
 function Popup() {
   const [user, setUser] = useState(null);
