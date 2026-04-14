@@ -64,6 +64,22 @@ onMessages({
     return api.deleteSession(msg.sessionId);
   },
 
+  [MSG.END_SESSION]: async () => {
+    await chrome.storage.local.remove(STORAGE_KEYS.ACTIVE_SESSION);
+    broadcast(MSG.SESSION_CREATED, { session: null });
+    return { success: true };
+  },
+
+  // UI
+  [MSG.OPEN_SIDE_PANEL]: async (msg, sender) => {
+    const tabId = sender?.tab?.id
+      ?? (await chrome.tabs.query({ active: true, currentWindow: true }))[0]?.id;
+    if (tabId) {
+      await chrome.sidePanel.open({ tabId });
+    }
+    return { success: true };
+  },
+
   // Checkpoints
   [MSG.ANSWER_CHECKPOINT]: async (msg) => {
     return api.answerCheckpoint(msg.sessionId, msg.checkpointId, msg.answer);

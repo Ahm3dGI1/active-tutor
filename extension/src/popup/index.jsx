@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { sendToBackground } from '../shared/messaging.js';
-import { MSG } from '../shared/constants.js';
+import { MSG, STORAGE_KEYS } from '../shared/constants.js';
 import '../content/styles.css';
 
 function Popup() {
@@ -13,10 +13,17 @@ function Popup() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [activeSession, setActiveSession] = useState(null);
+  const [recentSessions, setRecentSessions] = useState([]);
 
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    loadSessions();
+  }, [user]);
 
   const checkAuth = async () => {
     try {
@@ -26,6 +33,17 @@ function Popup() {
       console.error('Auth check failed:', err);
     }
     setLoading(false);
+  };
+
+  const loadSessions = async () => {
+    try {
+      const stored = await chrome.storage.local.get(STORAGE_KEYS.ACTIVE_SESSION);
+      setActiveSession(stored[STORAGE_KEYS.ACTIVE_SESSION] || null);
+      const list = await sendToBackground(MSG.LIST_SESSIONS);
+      if (Array.isArray(list)) setRecentSessions(list.slice(0, 3));
+    } catch (err) {
+      console.error('Failed to load sessions:', err);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -49,10 +67,25 @@ function Popup() {
   const handleLogout = async () => {
     await sendToBackground(MSG.AUTH_LOGOUT);
     setUser(null);
+    setActiveSession(null);
+    setRecentSessions([]);
   };
 
-  const openSidePanel = () => {
-    chrome.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+  const openSidePanel = async () => {
+    await sendToBackground(MSG.OPEN_SIDE_PANEL);
+    window.close();
+  };
+
+  const handleEndSession = async () => {
+    await sendToBackground(MSG.END_SESSION);
+    setActiveSession(null);
+  };
+
+  const handleResume = async (s) => {
+    await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_SESSION]: s });
+    setActiveSession(s);
+    await sendToBackground(MSG.OPEN_SIDE_PANEL);
+    window.close();
   };
 
   if (loading) {
@@ -77,12 +110,59 @@ function Popup() {
             <p className="text-xs text-surface-400">{user.email}</p>
           </div>
         </div>
-        <button
-          onClick={openSidePanel}
-          className="w-full bg-primary-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition mb-2"
-        >
-          Open Hermex Panel
-        </button>
+
+        {activeSession && (
+          <div className="mb-3 p-2.5 bg-primary-50 rounded-lg border border-primary-100">
+            <p className="text-xs text-primary-600 font-medium mb-0.5">Active session</p>
+            <p className="text-xs text-surface-700 truncate mb-2">{activeSession.title || 'Learning Session'}</p>
+            <div className="flex gap-1.5">
+              <button
+                onClick={openSidePanel}
+                className="flex-1 bg-primary-700 text-white py-1 rounded text-xs font-medium hover:bg-primary-600 transition"
+              >
+                Open
+              </button>
+              <button
+                onClick={handleEndSession}
+                className="flex-1 text-surface-500 py-1 rounded text-xs hover:text-red-600 border border-surface-200 transition"
+              >
+                End
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!activeSession && (
+          <button
+            onClick={openSidePanel}
+            className="w-full bg-primary-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition mb-2"
+          >
+            Open Hermex Panel
+          </button>
+        )}
+
+        {recentSessions.length > 0 && (
+          <div className="mb-2">
+            <p className="text-xs font-medium text-surface-500 mb-1.5">Recent sessions</p>
+            <div className="space-y-1">
+              {recentSessions.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => handleResume(s)}
+                  className="w-full text-left px-2 py-1.5 rounded-md hover:bg-surface-50 transition"
+                >
+                  <p className="text-xs text-surface-700 truncate">{s.title || `Session ${s.id}`}</p>
+                  {s.score && (
+                    <p className="text-[10px] text-surface-400">
+                      {s.score.correct}/{s.score.total} correct
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button
           onClick={handleLogout}
           className="w-full text-surface-500 py-1.5 rounded-lg text-xs hover:text-surface-700 transition"
