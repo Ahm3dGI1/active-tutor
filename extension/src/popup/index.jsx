@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { sendToBackground } from '../shared/messaging.js';
 import { MSG, STORAGE_KEYS } from '../shared/constants.js';
 import { syncDarkTheme } from '../shared/theme.js';
+import ToastHost from '../shared/ui/ToastHost.jsx';
+import ErrorBoundary from '../shared/ui/ErrorBoundary.jsx';
 import '../content/styles.css';
 
 syncDarkTheme();
@@ -230,4 +232,10 @@ function Popup() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<Popup />);
+createRoot(document.getElementById('root')).render(
+  <ErrorBoundary label="the Hermex popup">
+    <ToastHost>
+      <Popup />
+    </ToastHost>
+  </ErrorBoundary>
+);

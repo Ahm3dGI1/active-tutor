@@ -6,6 +6,7 @@ import ChatTab from './tabs/ChatTab.jsx';
 import MaterialsTab from './tabs/MaterialsTab.jsx';
 import RecapTab from './tabs/RecapTab.jsx';
 import SettingsTab from './tabs/SettingsTab.jsx';
+import ErrorBoundary from '../shared/ui/ErrorBoundary.jsx';
 
 const TABS = [
   { id: 'chat', label: 'Chat', icon: '\uD83D\uDCAC' },
@@ -118,7 +119,7 @@ export default function SidePanel() {
             </p>
           </div>
         ) : (
-          <>
+          <ErrorBoundary label={`the ${activeTab} tab`}>
             {activeTab === 'chat' && <ChatTab session={session} />}
             {activeTab === 'materials' && <MaterialsTab session={session} />}
             {activeTab === 'recap' && <RecapTab session={session} />}
@@ -133,7 +134,7 @@ export default function SidePanel() {
                 }}
               />
             )}
-          </>
+          </ErrorBoundary>
         )}
       </div>
     </div>
