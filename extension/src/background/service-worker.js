@@ -42,6 +42,13 @@ onMessages({
     return api.updateProfile(msg.data);
   },
 
+  [MSG.DELETE_ACCOUNT]: async () => {
+    const result = await api.deleteAccount();
+    await clearToken();
+    await chrome.storage.local.remove(STORAGE_KEYS.ACTIVE_SESSION);
+    return result;
+  },
+
   // Sessions
   [MSG.CREATE_SESSION]: async (msg) => {
     const data = await api.createSession(msg.youtubeUrl);

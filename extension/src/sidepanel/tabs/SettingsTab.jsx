@@ -42,6 +42,15 @@ function ProfileSection({ user, onAuthChange }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+
+  const [deleting, setDeleting] = useState(false);
+
   const handleSave = async () => {
     setSaving(true);
     setMessage('');
@@ -59,9 +68,51 @@ function ProfileSection({ user, onAuthChange }) {
     setSaving(false);
   };
 
+  const handleChangePassword = async () => {
+    setPasswordMessage('');
+    if (newPassword.length < 8) {
+      setPasswordMessage('Error: New password must be at least 8 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage('Error: Passwords do not match');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const res = await sendToBackground(MSG.UPDATE_PROFILE, {
+        data: { current_password: currentPassword, password: newPassword },
+      });
+      if (res?.error) throw new Error(res.error);
+      setPasswordMessage('Password updated!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setPasswordMessage(`Error: ${err.message}`);
+    }
+    setChangingPassword(false);
+  };
+
   const handleLogout = async () => {
     await sendToBackground(MSG.AUTH_LOGOUT);
     if (onAuthChange) onAuthChange();
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Delete your account permanently? All sessions, checkpoints, and study materials will be erased. This cannot be undone.'
+    );
+    if (!confirmed) return;
+    setDeleting(true);
+    try {
+      const res = await sendToBackground(MSG.DELETE_ACCOUNT);
+      if (res?.error) throw new Error(res.error);
+      if (onAuthChange) onAuthChange();
+    } catch (err) {
+      setMessage(`Error: ${err.message}`);
+      setDeleting(false);
+    }
   };
 
   return (
@@ -102,11 +153,68 @@ function ProfileSection({ user, onAuthChange }) {
 
       <hr className="border-surface-200" />
 
+      <div className="space-y-2">
+        <button
+          onClick={() => setShowPasswordChange(!showPasswordChange)}
+          className="w-full flex items-center justify-between px-1 py-1 text-xs font-medium text-surface-600 hover:text-surface-800 transition"
+        >
+          <span>Change Password</span>
+          <span className={`transition-transform ${showPasswordChange ? 'rotate-90' : ''}`}>›</span>
+        </button>
+        {showPasswordChange && (
+          <div className="space-y-2 pl-1">
+            <input
+              type="password"
+              placeholder="Current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-surface-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none"
+            />
+            <input
+              type="password"
+              placeholder="New password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-surface-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none"
+            />
+            <input
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-surface-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none"
+            />
+            <button
+              onClick={handleChangePassword}
+              disabled={changingPassword || !currentPassword || !newPassword}
+              className="w-full bg-primary-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition disabled:opacity-50"
+            >
+              {changingPassword ? 'Updating...' : 'Update Password'}
+            </button>
+            {passwordMessage && (
+              <p className={`text-xs ${passwordMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
+                {passwordMessage}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <hr className="border-surface-200" />
+
       <button
         onClick={handleLogout}
         className="w-full text-red-600 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition border border-red-200"
       >
         Sign Out
+      </button>
+
+      <button
+        onClick={handleDeleteAccount}
+        disabled={deleting}
+        className="w-full text-white py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 transition disabled:opacity-50"
+      >
+        {deleting ? 'Deleting...' : 'Delete Account'}
       </button>
     </div>
   );
