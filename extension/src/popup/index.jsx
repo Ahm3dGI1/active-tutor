@@ -9,6 +9,69 @@ import '../content/styles.css';
 
 syncDarkTheme();
 
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function ActiveSessionPanel({ session, onOpen, onEnd }) {
+  const [expanding, setExpanding] = useState(false);
+
+  return (
+    <div className={`mb-3 rounded-lg border bg-primary-50 border-primary-100 overflow-hidden transition-all ${expanding ? 'w-96' : ''}`}>
+      <div className="p-3 bg-primary-50">
+        <p className="text-xs text-primary-600 font-medium mb-1">Active session</p>
+        <p className="text-sm font-semibold text-surface-800 mb-2">{session.title || 'Learning Session'}</p>
+        <div className="flex gap-1.5 mb-2">
+          <button
+            onClick={onOpen}
+            className="flex-1 bg-primary-700 text-white py-1.5 rounded text-xs font-medium hover:bg-primary-600 transition"
+          >
+            💬 Open Chat
+          </button>
+          <button
+            onClick={onOpen}
+            className="flex-1 bg-amber-100 text-amber-900 py-1.5 rounded text-xs font-medium hover:bg-amber-200 transition"
+          >
+            📚 Materials
+          </button>
+          <button
+            onClick={onEnd}
+            className="px-2 py-1.5 text-surface-500 rounded text-xs border border-surface-200 hover:text-red-600 transition"
+          >
+            End
+          </button>
+        </div>
+      </div>
+
+      {session.checkpoints && session.checkpoints.length > 0 && (
+        <div className="bg-white border-t border-primary-100 max-h-48 overflow-y-auto">
+          <p className="text-xs font-medium text-surface-600 px-3 py-2 bg-surface-50 border-b border-surface-100">
+            📍 {session.checkpoints.length} Checkpoint{session.checkpoints.length !== 1 ? 's' : ''}
+          </p>
+          <div className="space-y-1 p-2">
+            {session.checkpoints.map((cp) => (
+              <div
+                key={cp.id}
+                className={`px-2 py-1.5 rounded text-xs ${
+                  cp.user_answer !== null
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-surface-50 text-surface-600 border border-surface-200'
+                }`}
+              >
+                <div className="font-medium">{formatTime(cp.timestamp_seconds)}</div>
+                <div className="text-[10px] opacity-75 truncate">{cp.question}</div>
+                {cp.user_answer !== null && <div className="text-[10px] mt-0.5">✓ Answered</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Popup() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -103,7 +166,7 @@ function Popup() {
 
   if (user) {
     return (
-      <div className="w-72 p-4 bg-white">
+      <div className="w-96 p-4 bg-white max-h-screen overflow-y-auto">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
             <span className="text-sm font-bold text-primary-700">
@@ -117,24 +180,11 @@ function Popup() {
         </div>
 
         {activeSession && (
-          <div className="mb-3 p-2.5 bg-primary-50 rounded-lg border border-primary-100">
-            <p className="text-xs text-primary-600 font-medium mb-0.5">Active session</p>
-            <p className="text-xs text-surface-700 truncate mb-2">{activeSession.title || 'Learning Session'}</p>
-            <div className="flex gap-1.5">
-              <button
-                onClick={openSidePanel}
-                className="flex-1 bg-primary-700 text-white py-1 rounded text-xs font-medium hover:bg-primary-600 transition"
-              >
-                Open
-              </button>
-              <button
-                onClick={handleEndSession}
-                className="flex-1 text-surface-500 py-1 rounded text-xs hover:text-red-600 border border-surface-200 transition"
-              >
-                End
-              </button>
-            </div>
-          </div>
+          <ActiveSessionPanel
+            session={activeSession}
+            onOpen={openSidePanel}
+            onEnd={handleEndSession}
+          />
         )}
 
         {!activeSession && (
