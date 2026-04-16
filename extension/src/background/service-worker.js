@@ -11,13 +11,13 @@ onMessages({
   // Auth
   [MSG.AUTH_LOGIN]: async (msg) => {
     const data = await api.loginUser({ email: msg.email, password: msg.password });
-    await setToken(data.access_token);
+    await setToken(data.token);
     return { success: true, user: data.user };
   },
 
   [MSG.AUTH_REGISTER]: async (msg) => {
     const data = await api.registerUser({ email: msg.email, password: msg.password, name: msg.name });
-    await setToken(data.access_token);
+    await setToken(data.token);
     return { success: true, user: data.user };
   },
 
@@ -31,7 +31,7 @@ onMessages({
     if (!token) return { authenticated: false };
     try {
       const data = await api.getMe();
-      return { authenticated: true, user: data };
+      return { authenticated: true, user: data.user };
     } catch {
       await clearToken();
       return { authenticated: false };
@@ -79,12 +79,19 @@ onMessages({
 
   // UI
   [MSG.OPEN_SIDE_PANEL]: async (msg, sender) => {
-    const tabId = sender?.tab?.id
-      ?? (await chrome.tabs.query({ active: true, currentWindow: true }))[0]?.id;
-    if (tabId) {
+    try {
+      const tabId = sender?.tab?.id
+        ?? (await chrome.tabs.query({ active: true, currentWindow: true }))[0]?.id;
+      if (!tabId) {
+        console.error('Failed to get tab ID for side panel');
+        return { success: false, error: 'No active tab found' };
+      }
       await chrome.sidePanel.open({ tabId });
+      return { success: true };
+    } catch (err) {
+      console.error('Failed to open side panel:', err);
+      return { success: false, error: err.message };
     }
-    return { success: true };
   },
 
   // Checkpoints

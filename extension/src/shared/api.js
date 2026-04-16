@@ -16,7 +16,13 @@ async function apiRequest(method, path, body = null) {
     options.body = JSON.stringify(body);
   }
 
-  const res = await fetch(`${baseUrl}${path}`, options);
+  let res;
+  try {
+    res = await fetch(`${baseUrl}${path}`, options);
+  } catch (err) {
+    const reason = err?.message || 'Network error';
+    throw new Error(`Unable to reach API at ${baseUrl}. ${reason}`);
+  }
 
   if (res.status === 401) {
     await clearToken();

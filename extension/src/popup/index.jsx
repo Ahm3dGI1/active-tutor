@@ -140,7 +140,15 @@ function Popup() {
   };
 
   const openSidePanel = async () => {
-    await sendToBackground(MSG.OPEN_SIDE_PANEL);
+    try {
+      const tab = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab[0]) {
+        await chrome.sidePanel.open({ tabId: tab[0].id });
+      }
+    } catch (err) {
+      console.error('Error opening side panel:', err);
+      return;
+    }
     window.close();
   };
 
@@ -150,9 +158,17 @@ function Popup() {
   };
 
   const handleResume = async (s) => {
-    await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_SESSION]: s });
-    setActiveSession(s);
-    await sendToBackground(MSG.OPEN_SIDE_PANEL);
+    try {
+      await chrome.storage.local.set({ [STORAGE_KEYS.ACTIVE_SESSION]: s });
+      setActiveSession(s);
+      const tab = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab[0]) {
+        await chrome.sidePanel.open({ tabId: tab[0].id });
+      }
+    } catch (err) {
+      console.error('Error resuming session:', err);
+      return;
+    }
     window.close();
   };
 

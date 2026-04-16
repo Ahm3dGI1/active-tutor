@@ -4,7 +4,11 @@
   "version": "1.0.0",
   "description": "AI-powered checkpoints, quizzes, and tutoring while watching YouTube videos",
   "permissions": ["storage", "sidePanel", "activeTab"],
-  "host_permissions": ["https://www.youtube.com/*"],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "http://localhost:5000/*",
+    "http://127.0.0.1:5000/*"
+  ],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
@@ -13,15 +17,14 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "js": ["content.js"],
-      "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "src/sidepanel/index.html"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/index.html",
     "default_icon": {
       "16": "assets/icon16.png",
       "48": "assets/icon48.png",
