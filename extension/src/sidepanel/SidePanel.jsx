@@ -147,9 +147,10 @@ export default function SidePanel() {
           ) : (
             <div className="h-full flex flex-col items-center justify-center p-6 text-center">
               <h2 className="text-lg font-bold text-surface-800 mb-2">No Active Session</h2>
-              <p className="text-sm text-surface-500">
-                Navigate to a YouTube video and click "Start Hermex Session" to begin learning.
+              <p className="text-sm text-surface-500 mb-6">
+                Paste a YouTube video URL to start a learning session.
               </p>
+              <StartSessionForm onSessionCreated={(sess) => setSession(sess)} />
             </div>
           )
         ) : (
@@ -171,6 +172,50 @@ export default function SidePanel() {
           </ErrorBoundary>
         )}
       </div>
+    </div>
+  );
+}
+
+function StartSessionForm({ onSessionCreated }) {
+  const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleStart = async () => {
+    setError('');
+    if (!url.trim()) {
+      setError('Please enter a YouTube URL');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await sendToBackground(MSG.CREATE_SESSION, { youtubeUrl: url });
+      if (res?.error) throw new Error(res.error);
+      onSessionCreated(res);
+    } catch (err) {
+      setError(err.message || 'Failed to create session');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="w-full space-y-3">
+      <input
+        type="url"
+        placeholder="https://youtube.com/watch?v=..."
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        disabled={loading}
+        className="w-full px-3 py-2 border border-surface-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none"
+      />
+      <button
+        onClick={handleStart}
+        disabled={loading}
+        className="w-full bg-primary-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition disabled:opacity-50"
+      >
+        {loading ? 'Starting...' : 'Start Session'}
+      </button>
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }
