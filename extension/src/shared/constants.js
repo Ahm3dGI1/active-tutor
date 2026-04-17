@@ -6,6 +6,7 @@ export const STORAGE_KEYS = {
   AUTH_TOKEN: 'hermex_auth_token',
   API_URL: 'hermex_api_url',
   ACTIVE_SESSION: 'hermex_active_session',
+  ONBOARDED: 'hermex_onboarded',
 };
 
 export const MSG = {

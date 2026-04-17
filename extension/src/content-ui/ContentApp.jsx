@@ -113,6 +113,8 @@ export default function ContentApp({ videoId, player }) {
       if (data.error) throw new Error(data.error);
       setSession(data);
       setCheckpoints(data.checkpoints || []);
+      // Mark the user as onboarded after their first successful session.
+      await chrome.storage.local.set({ [STORAGE_KEYS.ONBOARDED]: true });
     } catch (err) {
       console.error('Failed to create session:', err);
     }
