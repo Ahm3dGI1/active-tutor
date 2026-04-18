@@ -117,42 +117,13 @@ export default function SidePanel() {
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
         {!session && activeTab !== 'settings' ? (
-          !onboarded ? (
-            <div className="h-full overflow-y-auto p-6">
-              <h2 className="text-base font-bold text-surface-800 mb-1">Welcome to Hermex</h2>
-              <p className="text-xs text-surface-500 mb-5">
-                Three steps and you're learning actively.
-              </p>
-              <ol className="space-y-3">
-                {[
-                  { title: 'Pin the extension', body: 'Click the puzzle icon in your toolbar and pin Hermex so it\'s always one click away.' },
-                  { title: 'Open a YouTube video', body: 'Any watch page works. Shorts and the homepage don\'t — yet.' },
-                  { title: 'Start a session', body: 'A "Start Hermex Session" button appears below the video title. Click it and the session begins.' },
-                ].map((step, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="w-6 h-6 rounded-full bg-primary-700 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
-                      {i + 1}
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-surface-800">{step.title}</p>
-                      <p className="text-xs text-surface-500 leading-relaxed">{step.body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <p className="text-xs text-surface-400 mt-6">
-                The Chat, Materials, and Recap tabs unlock once a session is active.
-              </p>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-              <h2 className="text-lg font-bold text-surface-800 mb-2">No Active Session</h2>
-              <p className="text-sm text-surface-500 mb-6">
-                Paste a YouTube video URL to start a learning session.
-              </p>
-              <StartSessionForm onSessionCreated={(sess) => setSession(sess)} />
-            </div>
-          )
+          <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+            <h2 className="text-lg font-bold text-surface-800 mb-2">Start a Learning Session</h2>
+            <p className="text-sm text-surface-500 mb-6">
+              Paste a YouTube video URL to begin.
+            </p>
+            <StartSessionForm onSessionCreated={(sess) => setSession(sess)} />
+          </div>
         ) : (
           <ErrorBoundary label={`the ${activeTab} tab`}>
             {activeTab === 'chat' && <ChatTab session={session} />}
