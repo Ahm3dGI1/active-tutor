@@ -29,6 +29,10 @@ export default defineConfig({
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
+      manualChunks: (id) => {
+        // Force all dependencies inline by returning null for everything
+        return null;
+      },
     },
   },
 });
