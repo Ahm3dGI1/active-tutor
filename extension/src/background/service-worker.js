@@ -126,7 +126,24 @@ onMessages({
     return api.generateSessionRecap(msg.sessionId);
   },
 
-  // Learning Profile
+  // Player
+  [MSG.GET_CURRENT_TIME]: async (msg, sender) => {
+    // Relay to content script
+    try {
+      return await chrome.tabs.sendMessage(sender.tab.id, { type: MSG.GET_CURRENT_TIME });
+    } catch {
+      return { currentTime: 0 };
+    }
+  },
+
+  [MSG.PAUSE_VIDEO]: async (msg, sender) => {
+    // Relay to content script
+    try {
+      return await chrome.tabs.sendMessage(sender.tab.id, { type: MSG.PAUSE_VIDEO });
+    } catch {
+      return { paused: false };
+    }
+  },
   [MSG.GET_LEARNING_PROFILE]: async () => {
     return api.getLearningProfile();
   },

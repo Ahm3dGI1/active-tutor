@@ -181,6 +181,21 @@ function StartSessionForm({ onSessionCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    // Try to get the current video URL from the content script
+    const fetchCurrentVideo = async () => {
+      try {
+        const res = await sendToBackground(MSG.GET_VIDEO_INFO);
+        if (res?.url && res?.isWatchPage) {
+          setUrl(res.url);
+        }
+      } catch {
+        // Content script might not be ready yet, that's OK
+      }
+    };
+    fetchCurrentVideo();
+  }, []);
+
   const handleStart = async () => {
     setError('');
     if (!url.trim()) {
@@ -210,7 +225,7 @@ function StartSessionForm({ onSessionCreated }) {
       />
       <button
         onClick={handleStart}
-        disabled={loading}
+        disabled={loading || !url}
         className="w-full bg-primary-700 text-white py-2 rounded-lg text-sm font-medium hover:bg-primary-600 transition disabled:opacity-50"
       >
         {loading ? 'Starting...' : 'Start Session'}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sendToBackground } from '../../shared/messaging.js';
 import { MSG } from '../../shared/constants.js';
 
@@ -6,6 +6,13 @@ export default function CheckpointOverlay({ checkpoint, sessionId, onResult, onR
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Pause video when checkpoint appears
+  useEffect(() => {
+    sendToBackground(MSG.PAUSE_VIDEO).catch(() => {
+      // Content script might not be available
+    });
+  }, []);
 
   const labels = ['A', 'B', 'C', 'D'];
 

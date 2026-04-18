@@ -90,6 +90,11 @@ onMessage(MSG.GET_CURRENT_TIME, () => {
   return { currentTime: Math.floor(player.getCurrentTime()) };
 });
 
+onMessage(MSG.PAUSE_VIDEO, () => {
+  player.pause();
+  return { paused: true };
+});
+
 // Start observing navigation
 observeNavigation(initOnWatchPage);
 
