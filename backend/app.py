@@ -22,7 +22,12 @@ from ai_service import (
 
 load_dotenv()
 
-app = Flask(__name__)
+if os.getenv("VERCEL"):
+    os.makedirs("/tmp/flask_instance", exist_ok=True)
+    app = Flask(__name__, instance_path="/tmp/flask_instance")
+else:
+    app = Flask(__name__)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///learntube.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "change-me")
@@ -32,8 +37,9 @@ CORS(app, supports_credentials=True)
 jwt = JWTManager(app)
 db.init_app(app)
 
-with app.app_context():
-    db.create_all()
+if not os.getenv("VERCEL"):
+    with app.app_context():
+        db.create_all()
 
 
 def get_or_create_learning_profile(user_id):
