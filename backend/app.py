@@ -22,24 +22,24 @@ from ai_service import (
 
 load_dotenv()
 
-if os.getenv("VERCEL"):
-    os.makedirs("/tmp/flask_instance", exist_ok=True)
-    app = Flask(__name__, instance_path="/tmp/flask_instance")
-else:
-    app = Flask(__name__)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///learntube.db")
+app = Flask(__name__)
+_db_url = os.getenv("DATABASE_URL", "sqlite:///learntube.db")
+if _db_url.startswith("postgres://"):
+    _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = _db_url
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "change-me")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
 
-CORS(app, supports_credentials=True)
+_origins_env = os.getenv("FRONTEND_ORIGIN", "*")
+_cors_origins = [o.strip() for o in _origins_env.split(",")] if _origins_env != "*" else "*"
+CORS(app, resources={r"/api/*": {"origins": _cors_origins}}, supports_credentials=True)
 jwt = JWTManager(app)
 db.init_app(app)
 
-if not os.getenv("VERCEL"):
-    with app.app_context():
-        db.create_all()
+with app.app_context():
+    db.create_all()
 
 
 def get_or_create_learning_profile(user_id):
