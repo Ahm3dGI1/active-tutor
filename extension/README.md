@@ -1,11 +1,15 @@
-# Hermex Extension
+# Hermex Extension (Work In Progress)
 
-Chrome extension that turns YouTube into an active-learning session: the extension pauses the video at AI-generated checkpoint quizzes, and a side panel gives you a tutor chat, generated study materials, and a session recap.
+This Chrome extension is an experimental companion to the main Active Tutor web app.
+
+It turns YouTube into an active-learning session: the extension pauses the video at AI-generated checkpoint quizzes, and a side panel gives you tutor chat, generated study materials, and a session recap.
+
+Current status: development is active, and there are still known bugs and unstable flows. Use this build for testing, not as a fully stable production experience.
 
 ## Prerequisites
 
 - Node 18+ and npm
-- The Flask backend from the original web app (`../old/backend/`) running at `http://localhost:5000` — the extension talks to it for auth, transcripts, checkpoints, and AI generation.
+- The Flask backend in `../backend/` running at `http://localhost:5000` - the extension talks to it for auth, transcripts, checkpoints, and AI generation.
 
 ## Install (development)
 
