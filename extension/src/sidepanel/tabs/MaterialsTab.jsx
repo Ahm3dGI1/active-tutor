@@ -10,6 +10,7 @@ const MATERIAL_OPTIONS = [
 ];
 
 export default function MaterialsTab({ session }) {
+  const sessionId = session?.id ?? session?.session_id;
   const [materials, setMaterials] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState(['summary']);
   const [generating, setGenerating] = useState(false);
@@ -17,12 +18,17 @@ export default function MaterialsTab({ session }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
     loadMaterials();
-  }, [session.id]);
+  }, [sessionId]);
 
   const loadMaterials = async () => {
     try {
-      const res = await sendToBackground(MSG.LIST_MATERIALS, { sessionId: session.id });
+      if (!sessionId) throw new Error('Missing session ID');
+      const res = await sendToBackground(MSG.LIST_MATERIALS, { sessionId });
       if (res.error) throw new Error(res.error);
       setMaterials(res.materials || res || []);
     } catch (err) {
@@ -49,7 +55,7 @@ export default function MaterialsTab({ session }) {
     setGenerating(true);
     try {
       const res = await sendToBackground(MSG.GENERATE_MATERIALS, {
-        sessionId: session.id,
+        sessionId,
         materialTypes: selectedTypes,
       });
       if (res.error) throw new Error(res.error);
@@ -63,7 +69,7 @@ export default function MaterialsTab({ session }) {
   const viewMaterial = async (material) => {
     try {
       const res = await sendToBackground(MSG.GET_MATERIAL, {
-        sessionId: session.id,
+        sessionId,
         materialId: material.id,
       });
       if (res.error) throw new Error(res.error);

@@ -102,13 +102,20 @@ export class YouTubePlayer {
   }
 
   /**
-   * Clean up all event listeners
+   * Remove all registered event listeners while keeping current video binding
    */
-  destroy() {
+  clearListeners() {
     for (const { event, handler } of this.listeners) {
       this.video?.removeEventListener(event, handler);
     }
     this.listeners = [];
+  }
+
+  /**
+   * Clean up all event listeners and release video binding
+   */
+  destroy() {
+    this.clearListeners();
     this.video = null;
   }
 }

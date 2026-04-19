@@ -79,10 +79,15 @@ function cleanup() {
 
 // Listen for video info requests from side panel
 onMessage(MSG.GET_VIDEO_INFO, () => {
+  const titleEl = document.querySelector('h1.ytd-watch-metadata yt-formatted-string')
+    || document.querySelector('h1.title');
+  const rawTitle = titleEl?.textContent?.trim()
+    || document.title.replace(/\s*-\s*YouTube\s*$/i, '').trim();
   return {
     videoId: extractVideoId(window.location.href),
     url: window.location.href,
     isWatchPage: isWatchPage(),
+    title: rawTitle || null,
   };
 });
 
@@ -93,6 +98,15 @@ onMessage(MSG.GET_CURRENT_TIME, () => {
 onMessage(MSG.PAUSE_VIDEO, () => {
   player.pause();
   return { paused: true };
+});
+
+onMessage(MSG.SEEK_VIDEO_TIME, (message) => {
+  const seconds = Number(message?.seconds);
+  if (Number.isFinite(seconds)) {
+    player.seekTo(Math.max(0, seconds));
+    return { success: true, currentTime: Math.floor(player.getCurrentTime()) };
+  }
+  return { success: false };
 });
 
 // Start observing navigation

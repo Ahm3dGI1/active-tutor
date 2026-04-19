@@ -3,17 +3,22 @@ import { sendToBackground } from '../../shared/messaging.js';
 import { MSG } from '../../shared/constants.js';
 
 export default function RecapTab({ session }) {
+  const sessionId = session?.id ?? session?.session_id;
   const [recap, setRecap] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
     loadRecap();
-  }, [session.id]);
+  }, [sessionId]);
 
   const loadRecap = async () => {
     try {
-      const res = await sendToBackground(MSG.GET_RECAP, { sessionId: session.id });
+      const res = await sendToBackground(MSG.GET_RECAP, { sessionId });
       if (res && !res.error) {
         setRecap(res.recap || res);
       }
@@ -26,7 +31,7 @@ export default function RecapTab({ session }) {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const res = await sendToBackground(MSG.GENERATE_RECAP, { sessionId: session.id });
+      const res = await sendToBackground(MSG.GENERATE_RECAP, { sessionId });
       if (res.error) throw new Error(res.error);
       setRecap(res.recap || res);
     } catch (err) {

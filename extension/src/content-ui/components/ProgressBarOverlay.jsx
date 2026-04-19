@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function ProgressBarOverlay({ currentTime, duration, checkpoints }) {
+export default function ProgressBarOverlay({ currentTime, duration, checkpoints, onCheckpointClick }) {
   const [container, setContainer] = useState(null);
   const barRef = useRef(null);
 
@@ -74,8 +74,10 @@ export default function ProgressBarOverlay({ currentTime, duration, checkpoints 
           }
 
           return (
-            <div
+            <button
               key={cp.id}
+              type="button"
+              onClick={() => onCheckpointClick?.(cp)}
               title={`Checkpoint @ ${formatTime(cp.timestamp_seconds)}`}
               style={{
                 position: 'absolute', top: '50%',
@@ -84,6 +86,7 @@ export default function ProgressBarOverlay({ currentTime, duration, checkpoints 
                 backgroundColor: color, borderRadius: '50%',
                 border: '2px solid white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                 cursor: 'pointer', transition: 'all 0.15s',
+                padding: 0,
               }}
             />
           );

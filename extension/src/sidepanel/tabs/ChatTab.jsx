@@ -3,6 +3,7 @@ import { sendToBackground, sendToContentScript } from '../../shared/messaging.js
 import { MSG } from '../../shared/constants.js';
 
 export default function ChatTab({ session }) {
+  const sessionId = session?.id ?? session?.session_id;
   const [messages, setMessages] = useState(session.chat_messages || []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function ChatTab({ session }) {
   const handleSend = async (e) => {
     e.preventDefault();
     const msg = input.trim();
-    if (!msg || loading) return;
+    if (!msg || loading || !sessionId) return;
 
     // Optimistically add user message
     const userMsg = { id: Date.now(), role: 'user', content: msg, created_at: new Date().toISOString() };
@@ -38,7 +39,7 @@ export default function ChatTab({ session }) {
       }
 
       const res = await sendToBackground(MSG.SEND_CHAT, {
-        sessionId: session.id,
+        sessionId,
         message: msg,
         currentTime,
       });

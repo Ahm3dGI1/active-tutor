@@ -37,6 +37,11 @@ async function apiRequest(method, path, body = null) {
   return res.json();
 }
 
+function unwrapPayload(payload, key) {
+  if (!payload || typeof payload !== 'object') return payload;
+  return key in payload ? payload[key] : payload;
+}
+
 // Auth
 export const loginUser = (data) => apiRequest('POST', '/auth/login', data);
 export const registerUser = (data) => apiRequest('POST', '/auth/register', data);
@@ -52,10 +57,10 @@ export const updateLearningContext = (promptText) =>
   apiRequest('PUT', '/learning-context', { prompt_text: promptText });
 
 // Sessions
-export const createSession = (youtubeUrl) =>
-  apiRequest('POST', '/sessions', { youtube_url: youtubeUrl });
-export const listSessions = () => apiRequest('GET', '/sessions');
-export const getSession = (id) => apiRequest('GET', `/sessions/${id}`);
+export const createSession = async (youtubeUrl) =>
+  unwrapPayload(await apiRequest('POST', '/sessions', { youtube_url: youtubeUrl }), 'session');
+export const listSessions = async () => unwrapPayload(await apiRequest('GET', '/sessions'), 'sessions');
+export const getSession = async (id) => unwrapPayload(await apiRequest('GET', `/sessions/${id}`), 'session');
 export const deleteSession = (id) => apiRequest('DELETE', `/sessions/${id}`);
 
 // Checkpoints
@@ -67,14 +72,18 @@ export const sendChatMessage = (sessionId, message, currentTime) =>
   apiRequest('POST', `/sessions/${sessionId}/chat`, { message, current_time: currentTime });
 
 // Study Materials
-export const generateStudyMaterial = (sessionId, materialTypes) =>
-  apiRequest('POST', `/sessions/${sessionId}/study-materials`, { material_types: materialTypes });
-export const listStudyMaterials = (sessionId) =>
-  apiRequest('GET', `/sessions/${sessionId}/study-materials`);
-export const getStudyMaterial = (sessionId, materialId) =>
-  apiRequest('GET', `/sessions/${sessionId}/study-materials/${materialId}`);
+export const generateStudyMaterial = async (sessionId, materialTypes) =>
+  unwrapPayload(
+    await apiRequest('POST', `/sessions/${sessionId}/study-materials`, { material_types: materialTypes }),
+    'materials'
+  );
+export const listStudyMaterials = async (sessionId) =>
+  unwrapPayload(await apiRequest('GET', `/sessions/${sessionId}/study-materials`), 'materials');
+export const getStudyMaterial = async (sessionId, materialId) =>
+  unwrapPayload(await apiRequest('GET', `/sessions/${sessionId}/study-materials/${materialId}`), 'material');
 
 // Recaps
-export const getSessionRecap = (sessionId) => apiRequest('GET', `/sessions/${sessionId}/recap`);
-export const generateSessionRecap = (sessionId) =>
-  apiRequest('POST', `/sessions/${sessionId}/recap`);
+export const getSessionRecap = async (sessionId) =>
+  unwrapPayload(await apiRequest('GET', `/sessions/${sessionId}/recap`), 'recap');
+export const generateSessionRecap = async (sessionId) =>
+  unwrapPayload(await apiRequest('POST', `/sessions/${sessionId}/recap`), 'recap');
